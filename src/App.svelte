@@ -1,7 +1,7 @@
 <script>
   import logo from "./assets/svelte.png";
   import Counter from "./lib/Counter.svelte";
-  import { Chessboard, fenToObj, objToFen } from "../../chessboardjs-npm/dist/build/chessboard.mjs";
+  import { Chessboard, fenToObj, objToFen } from "@discape/chessboardjs";
   import { onMount } from "svelte";
 
   const config = {
