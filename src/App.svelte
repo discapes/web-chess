@@ -50,29 +50,6 @@
 </main>
 
 <style>
-  :global(.spare-pieces-7492f) {
-    display: flex;
-    justify-content: center;
-  }
-
-  :global(.piece-wrapper) {
-    position: relative;
-    display: inline-block;
-    z-index: 100;
-  }
-
-  :global(.spare-count) {
-    border: 1px solid #ccc;
-    padding: 0 4px;
-    border-radius: 37%;
-    font-size: 12px;
-    position: absolute;
-    z-index: 1;
-    background: #fff;
-    right: 0;
-    bottom: 1px;
-  }
-
   :root {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   }

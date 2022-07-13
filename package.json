@@ -14,7 +14,7 @@
     "vite": "^2.9.9"
   },
   "dependencies": {
-    "@discape/chessboardjs": "file:../chessboardjs-npm",
+    "@discape/chessboardjs": "^1.1.0",
     "chess.js": "^0.13.3"
   }
 }
