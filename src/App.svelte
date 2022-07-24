@@ -128,7 +128,7 @@
       <div class="w-96" id={boardId} />
       <div class="flex justify-center items-center w-80">
         <Button on:click={newGame} />
-        <div class="grow"><Slider bind:value={difficulty} min={0} max={4} initialValue={2} /></div>
+        <div class="grow hidden"><Slider bind:value={difficulty} min={0} max={4} initialValue={2} /></div>
       </div>
     {:else}
       <pre bind:this={tf} class="w-11/12 h-96 overflow-auto border border-black p-5">{consoleText}</pre>
