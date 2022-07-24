@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "copy-lib": "rm -rf public/lib && mkdir -p public/lib && cp node_modules/stockfish-nnue.wasm/* public/lib"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
@@ -20,6 +21,6 @@
   "dependencies": {
     "@discape/chessboardjs": "^1.1.0",
     "chess.js": "^0.13.3",
-    "js-chess-engine": "^1.0.2"
+    "stockfish-nnue.wasm": "^1.0.0-1946a675.smolnet"
   }
 }

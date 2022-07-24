@@ -3,23 +3,55 @@
   import { Chessboard, fenToObj, objToFen } from "@discape/chessboardjs";
   import { Chess } from "chess.js";
   import { onMount } from "svelte";
-  import * as jsChessEngine from "js-chess-engine";
   import Button from "./Button.svelte";
   import Slider from "./Slider.svelte";
 
   const boardId = "myBoard";
   let gameOver = false;
   let difficulty = 2;
+  const dev = false;
+  console.log = () => 0;
+  
+  let stockfish;
+  let resolveBestMove;
 
-  onMount(newGame);
+  
+  onMount(async () => {
+    stockfish = await Stockfish();
+    const oldPostMessage = stockfish.postMessage.bind(stockfish);
+    stockfish.postMessage = (...data) => (console.log(data), oldPostMessage(...data));
+    stockfish.addMessageListener(sfMessageListener);
+    // stockfish.addMessageListener((line) => {
+    //   consoleText += line + "\n";
+    //   setTimeout(() => {
+    //     if (tf.scrollHeight - tf.scrollTop - tf.clientHeight > tf.clientHeight - 100) return;
+    //     tf.scrollTop = tf.scrollHeight;
+    //   }, 0);
+    // });
+  });
 
-  function newGame() {
+  function getBestMove() {
+    stockfish.postMessage("go movetime 3");
+    return new Promise(res => resolveBestMove = res);
+  }
+  function sfMessageListener(line) {
+    console.log(line);
+    if (line.startsWith("bestmove")) {
+      const movestr = line.split(' ')[1];
+      const from = movestr[0] + movestr[1];
+      const to = movestr[2] + movestr[3];
+      resolveBestMove({ from, to });
+    }
+  }
+
+  async function newGame() {
+    stockfish.postMessage("ucinewgame");
+    stockfish.postMessage("position startpos");
     document.body.style.setProperty("--black-check-color", "");
     document.body.style.setProperty("--white-check-color", "");
     const game = new Chess();
     const markedMoves = [];
     const highlighted = [];
-    const engine = new jsChessEngine.Game();
 
     const removeMarkedMoves = () => markedMoves.forEach((elem) => elem.classList.remove("dot-middle"));
     const removeHighlights = () => {
@@ -40,6 +72,7 @@
       position: "start",
       draggable: true,
       scaleDrag: 1.2,
+      pieceTheme: "/wikipedia/{piece}.png",
       preloadImages: true,
       onDrop: (source, target) => {
         removeMarkedMoves();
@@ -53,18 +86,17 @@
         document.body.style.setProperty("--white-check-color", "");
         document.body.style.setProperty("--black-check-color", game.in_check() ? "red" : "");
         gameOver = game.game_over();
-        engine.move(source, target);
+        stockfish.postMessage("position fen " + game.fen());
         setTimeout(async () => {
-          const aiMove = engine.aiMove(difficulty);
-          const from = Object.entries(aiMove)[0][0].toLowerCase();
-          const to = Object.entries(aiMove)[0][1].toLowerCase();
-          game.move({ from, to, promotion: "q" });
+          const aiMove = await getBestMove();
+          game.move({ from: aiMove.from, to: aiMove.to, promotion: "q" });
           board.position(game.fen());
-          highlightMove(from, to);
+          stockfish.postMessage("position fen " + game.fen())
+          highlightMove(aiMove.from, aiMove.to);
           document.body.style.setProperty("--white-check-color", game.in_check() ? "red" : "");
           document.body.style.setProperty("--black-check-color", "");
           gameOver = game.game_over();
-        }, 1000);
+        }, 0);
       },
       onSnapEnd: () => board.position(game.fen()),
       onDragStart: (source, piece) => !game.game_over() && piece[0] === game.turn() && game.turn() === "w",
@@ -78,14 +110,32 @@
       onMouseoutSquare: removeMarkedMoves,
     });
   }
+
+  let tf;
+  let inputValue = "";
+  let consoleText = "";
+  // function enterCommand() {
+  //   const cmd = inputValue;
+  //   inputValue = "";
+  //   if (cmd) stockfish.postMessage(cmd);
+  // }
 </script>
 
-<main class="-z-20 font-sans bg-gradient-to-r from-purple-100 to-pink-100 h-screen overflow-auto flex flex-col justify-center items-center">
-  <h1>web-chess</h1>
-  <div class="w-96" id={boardId} />
-  <div class="flex justify-center items-center w-80">
-    <Button on:click={newGame} invisible={gameOver} />
-    <div class="grow"><Slider bind:value={difficulty} min={0} max={4} initialValue={2}/></div>
+<main class="overflow-auto font-sans bg-gradient-to-r from-purple-100 to-pink-100 h-screen">
+  <div class="p-3 flex flex-col items-center min-w-full">
+    {#if !dev}
+      <h1>web-chess</h1>
+      <div class="w-96" id={boardId} />
+      <div class="flex justify-center items-center w-80">
+        <Button on:click={newGame} />
+        <div class="grow"><Slider bind:value={difficulty} min={0} max={4} initialValue={2} /></div>
+      </div>
+    {:else}
+      <pre bind:this={tf} class="w-11/12 h-96 overflow-auto border border-black p-5">{consoleText}</pre>
+      <form class="m-5" on:submit|preventDefault={enterCommand}>
+        <input bind:value={inputValue} />
+      </form>
+    {/if}
   </div>
 </main>
 

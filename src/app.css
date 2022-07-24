@@ -148,10 +148,8 @@ a {
   outline: 0;
 }
 
-.clearfix::after {
-  content: "";
-  clear: both;
-  display: table;
+input {
+  @apply p-1;
 }
 
 @media (min-width: 768px) {
